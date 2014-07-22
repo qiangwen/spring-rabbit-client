@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="  
+    http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+    http://www.springframework.org/schema/context  
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+    http://www.springframework.org/schema/mvc  
+    http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+     http://www.springframework.org/schema/rabbit
+    http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd"
+	default-autowire="byName">
+
+	<rabbit:connection-factory id="connectionFactory"
+		host="localhost" port="5672" username="guest" password="guest"
+		virtual-host="/" />
+	<!-- <rabbit:admin connection-factory="connectionFactory" /> -->
+	<!-- 定义queue，Exchange中绑定queue和routekey -->
+	<rabbit:queue name="msgqueue" />
+	<rabbit:topic-exchange name="topicExchange">
+		<rabbit:bindings>
+			<rabbit:binding pattern="msg.*.*" queue="msgqueue"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:topic-exchange>
+	
+	
+	<rabbit:listener-container connection-factory="connectionFactory">
+		<!-- response-exchange="topicExchange" response-routing-key="msg.q.e" -->
+		<rabbit:listener ref="messsageHandler"  queue-names="msgqueue" />
+	</rabbit:listener-container>
+	
+	<bean id="messsageHandler" class="com.rabbit.client.MessageHandler"></bean>
+	<!-- rabbitmq发送和接受消息模板 -->
+	<!-- <bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate"> 
+		<constructor-arg ref="connectionFactory"></constructor-arg> <property name="connectionFactory" 
+		ref="connectionFactory"></property> </bean> -->
+
+	<!-- 连接rabbitmq服务器的工厂类 -->
+	<!-- <bean id="connectionFactory" class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory"> 
+		<property name="host" value="localhost"></property> <property name="port" 
+		value="5672"></property> <property name="username" value="guest"></property> 
+		<property name="password" value="guest"></property> <property name="virtualHost" 
+		value="/"></property> </bean> -->
+	<!-- 创建rabbitAdmin 代理类 -->
+	<!-- <bean id="rabbitAdmin" class="org.springframework.amqp.rabbit.core.RabbitAdmin"> 
+		<constructor-arg ref="connectionFactory"></constructor-arg> </bean> -->
+
+	<!-- 声明queue并设置queue -->
+	<!-- <bean id="msgQueue" class="org.springframework.amqp.core.Queue"> <constructor-arg 
+		value="msgqueue"></constructor-arg> </bean> -->
+
+	<!-- 消息转换器 -->
+	<!-- <bean id="messageConverter" class="org.springframework.amqp.support.converter.SimpleMessageConverter" 
+		/> -->
+
+	<!-- 生命Exchange的类型 -->
+	<!-- <bean id="msgTopic" class="org.springframework.amqp.core.TopicExchange"> 
+		<constructor-arg value="msg.topic"></constructor-arg> </bean> -->
+	<!-- <bean id="msgDirect" class="org.springframework.amqp.core.DirectExchange"> 
+		<constructor-arg value="msg.direct"></constructor-arg> </bean> -->
+
+	<!-- 通过Binding来判定Queue、Exchange、routingKey -->
+	<!-- 其中构建Binding的参数1是Queue，参数2是Exchange，参数3是routingKey -->
+	<!-- <bean id="msgBinding" class="org.springframework.amqp.core.Binding"> 
+		<constructor-arg index="0" value="msgqueue"></constructor-arg> <constructor-arg 
+		index="1"> <bean class="org.springframework.amqp.core.Binding.DestinationType.QUEUE"></bean> 
+		</constructor-arg> <constructor-arg index="2" value="msg.topic"></constructor-arg> 
+		<constructor-arg index="3" value="msg.queue"></constructor-arg> <constructor-arg 
+		index="4" > <map> </map> </constructor-arg> <property name="destination" 
+		value="msgqueue"></property> <property name="exchange" value="msg.topic"></property> 
+		<property name="routingKey" value="msg.queue"></property> </bean> -->
+	<!-- 消息处理类 -->
+	<!-- <bean id="messageHandler" class="com.rabbit.client.MessageHandler" 
+		/> -->
+
+	<!-- 用于消息的监听的代理类 -->
+	<!-- <bean id="messageListenerAdapter" class="org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter"> 
+		<constructor-arg ref="messageHandler"></constructor-arg> <property name="messageConverter" 
+		ref="messageConverter"></property> <property name="responseExchange" value="msg.topic"></property> 
+		<property name="responseRoutingKey" value="msg.queue"></property> </bean> -->
+
+	<!-- <bean id="listenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer"> 
+		<property name="queueNames" value="msgqueue"></property> <property name="connectionFactory" 
+		ref="connectionFactory"></property> <property name="messageListener" ref="messageListenerAdapter"></property> 
+		</bean> -->
+
+
+</beans> 
